@@ -3,6 +3,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import io.appium.java_client.MobileBy;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.ios.IOSDriver;
@@ -52,12 +53,9 @@ enum EnvironmentMode {
 	EnvironmentMode EnvMode;
 	AppiumDriverLocalService service;
 
-
-	
 	
 	@BeforeSuite(alwaysRun = true)
 	public void setupBeforeSuite(ITestContext context) throws ParserConfigurationException, SAXException, IOException, InterruptedException, jdk.internal.org.xml.sax.SAXException {
-		
         // This is your api key, make sure you use it in all your tests.
 		//Set the tests configuration
 		webElementXmlPath = genMeth.getValueFromPropFile("webElementXmlPath");
@@ -67,80 +65,48 @@ enum EnvironmentMode {
 		EnvMode = genMeth.UserSetEnvironmentMode(EnvMode);
 		useEye = genMeth.UseEye();
 		
-		
 		iosData = genMeth.setElements(webElementXmlPath, webElementXmlLang);
-		//service = genMeth.startAppiumService();
 
 		driver = genMeth.setCapabilitiesIos(genMeth);
-		//genMeth.eyesCheckWindow("Test", useEye, genMeth, skipfailure);
 
 		genMeth.cleanLoginIos(genMeth, EnvMode);
 	}
 
-	@BeforeMethod (alwaysRun = true)
-	public void checkHomeScreen() throws InterruptedException, IOException, ParserConfigurationException, SAXException, jdk.internal.org.xml.sax.SAXException{
-
+	@BeforeMethod(alwaysRun = true)
+	public void checkHomeScreen() throws InterruptedException, IOException, ParserConfigurationException, SAXException,
+			jdk.internal.org.xml.sax.SAXException {
 
 		// Check if the client still logged in & in StartUp screen before each test
 		if (driver == null) {
 			try {
-//				driver.removeApp(genMeth.getValueFromPropFile("appPackage"));
-				//driver.quit();
 				driver = genMeth.setCapabilitiesIos(genMeth);
 				genMeth.cleanLoginIos(genMeth, EnvMode);
-				
+
 			} catch (Exception e) {
 				// swallow if fails
-				
+
 			}
-			
+
 		}
 
 		else {
-			
-			boolean StartUpScreenDisplay = genMeth.checkIsElementVisible( By.id("Applications"));
+
+			boolean StartUpScreenDisplay = genMeth.checkIsElementVisible(By.id("Applications"));
 
 			if (StartUpScreenDisplay != true) {
 
 				try {
-					/*
-					genMeth.clickId(genMeth, iosData.BTNsettingsIconXpth);
-					driver.findElementById(iosData.BTNlogoutName).click();
-					//genMeth.clickId(genMeth, iosData.BTNlogoutName);			
-					driver.removeApp(appIdentifier);
-					driver.quit();
-					*/
-					
-					//reset app -->  reinstall the app (login screen will be displayed)
-					driver.resetApp();
-					//driver.resetApp();   
 
-					
+					// reset app --> reinstall the app (login screen will be
+					// displayed)
+					driver.resetApp();
+
 				} catch (Exception e) {
 					driver.quit();
 					// swallow if fails
 				}
-				
-				/*
-				try {
-					driver.removeApp(appIdentifier);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				try {
-					driver.quit();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 
-*/
-				
-				//driver = genMeth.setCapabilitiesIos(genMeth);
-				//iosData = genMeth.setElements(webElementXmlPath, webElementXmlLang);
-				genMeth.releaseAllow(genMeth);
+				genMeth.ReleaseAlert();
 				genMeth.cleanLoginIos(genMeth, EnvMode);
 
 			}
@@ -151,7 +117,7 @@ enum EnvironmentMode {
 		
 	
 	@Test(enabled = true, testName = "Bad Credentials", retryAnalyzer = Retry.class, description = "Bad Credentials",
-			groups = { "Sanity IOS1" })
+			groups = { "Sanity IOS" })
 
 	public void logins_BadCredentials() throws ParserConfigurationException, SAXException,
 			IOException, InterruptedException {
@@ -162,6 +128,7 @@ enum EnvironmentMode {
 		//Attempt to login with Empty Credentials
 		genMeth.clickId(genMeth, iosData.BTNloginID);
 		genMeth.eyesCheckWindow("(iOS_V6) Logins_BadCredentials- Empty credentials", useEye, genMeth, skipfailure);
+		genMeth.ReleaseAlert();
 		genMeth.releaseOK(genMeth);
 		
 		// Attempt to login with Empty Password
@@ -241,13 +208,11 @@ enum EnvironmentMode {
 	public void environmentsScreen() throws ParserConfigurationException, SAXException,
 			IOException, InterruptedException {
 		
-
 		//Sign out from the Application screen
 		String DevAuthorizationURL = "http://SGDS-dev.cloudapp.net/auth/oauth2/token";
 		String DevDistributionURL = "https://SGDS-dev.cloudapp.net/PublisherAPIV2/api/V2";
 		String DevClient_ID = "099153c2625149bc8ecb3e85e03f0022";
 		String DevClient_Secret = "IxrAjDoa2FqElO7IhrSrUJELhUckePEPVpaePlS_Xaw";
-		
 		genMeth.signOutFromStartup(genMeth);
 		
 		//Open the ENV screen
@@ -262,18 +227,20 @@ enum EnvironmentMode {
 		genMeth.clickId(genMeth, "Add environment");
 		
 		//Open QR
-		genMeth.clickId(genMeth, "Fill From Barcode");
-		genMeth.releaseOK(genMeth);
+		genMeth.clickId(genMeth, "Fill From QR");
+		genMeth.ReleaseAlert();
 		Thread.sleep(2000);
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- QR Open", useEye, genMeth, skipfailure);
-		genMeth.clickId(genMeth, iosData.IconCancelENV);
+		String xpth = "//XCUIElementTypeNavigationBar[@name=\"Beta.QRScannerView\"]/XCUIElementTypeButton[1]";
+		genMeth.clickXpth(genMeth, xpth);
 		
 		//Open Type
 		genMeth.clickId(genMeth, "Type");
 		genMeth.clickId(genMeth, "TAG");
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- Type = TAG", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, "SkyGiraffe");
-		genMeth.clickId(genMeth, iosData.IconBack);
+		xpth = "//XCUIElementTypeButton[@name=\"Add Environment\"]";
+		genMeth.clickXpth(genMeth, xpth);
 		
 		//ENV Label
 		genMeth.sendId(genMeth, "Environment Label", "Customized ENV - Dev");
@@ -291,6 +258,7 @@ enum EnvironmentMode {
 		genMeth.closeKeyborad();
 
 		// Client secret
+		Thread.sleep(2000);
 		genMeth.sendId(genMeth, "Required", DevClient_Secret);
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- All ENV set", useEye, genMeth, skipfailure);
 
@@ -298,9 +266,10 @@ enum EnvironmentMode {
 		
 		//Need to press it till bug # will be fixed
 		genMeth.clickId(genMeth, "Customized ENV - Dev");
-		
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- Customized ENV was chosen", useEye, genMeth, skipfailure);
-		genMeth.clickId(genMeth, iosData.IconCancelENV);
+		Thread.sleep(1000);
+		xpth = "//XCUIElementTypeNavigationBar[@name=\"Environments\"]/XCUIElementTypeButton";
+		genMeth.clickXpth(genMeth, xpth);
 		
 		// Login with correct credentials (go back to Application screen)
 		genMeth.sendId(genMeth, "Username", iosData.userQA);
@@ -317,8 +286,8 @@ enum EnvironmentMode {
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- Customized ENV was chosen", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, "Development");
 
-		/*
-
+		
+/*
 		//Edit Customize ENV by swipe
 		Thread.sleep(2000);
 		//TouchAction ta = new TouchAction(driver);
@@ -332,10 +301,13 @@ enum EnvironmentMode {
 		driver.swipe(300, 370, 100, 370, 2000);
 		genMeth.clickId(genMeth, iosData.BTNdelete);
 		genMeth.eyesCheckWindow("(iOS_V6) environmentsScreen- Customized ENV was deleted", useEye, genMeth, skipfailure);
+		
+		(300,450) (40,450)
 */
 		
 		//Go Back to the Application Screen
-		genMeth.clickId(genMeth, iosData.IconCancelENV);
+		xpth = "//XCUIElementTypeNavigationBar[@name=\"Environments\"]/XCUIElementTypeButton";
+		genMeth.clickXpth(genMeth, xpth);
 		genMeth.sendId(genMeth, "Username", iosData.userQA);
 		genMeth.sendId(genMeth, "Password", iosData.passwordQA);
 		genMeth.clickId(genMeth, iosData.BTNloginID);
@@ -349,8 +321,7 @@ enum EnvironmentMode {
 
 	public void EmployeeDirectory_Person() throws ParserConfigurationException, SAXException,
 			IOException, InterruptedException {
-		
-
+					
 		//Open the SQL Golden V6 App
 		genMeth.clickId(genMeth, "SQL Golden V6");
 		
@@ -361,7 +332,9 @@ enum EnvironmentMode {
 		
 		//Search a non existing user
 		genMeth.clickId(genMeth, "nav icon search");
+		
 		genMeth.sendId(genMeth, "Search", "non existing user");
+		
 		genMeth.eyesCheckWindow("(iOS_V6)- EmployeeDirectory_Person - Non Existing user", useEye, genMeth, skipfailure);
 
 		//Close & open the search field
@@ -371,6 +344,7 @@ enum EnvironmentMode {
 		
 		//Clear search filed
 		genMeth.clickId(genMeth, iosData.BTNclearText);
+		Thread.sleep(3000);
 		genMeth.eyesCheckWindow("(iOS_V6)- EmployeeDirectory_Person - Clear search field", useEye, genMeth, skipfailure);
 		
 		//Search an employee
@@ -404,8 +378,7 @@ enum EnvironmentMode {
 		genMeth.clickId(genMeth, iosData.BTNCancel);
 		
 		//Mini Map
-		
-		genMeth.swipeDownIphone6(1, 1000);
+		genMeth.SwipeDown();
 		genMeth.eyesCheckWindow("(iOS_V6)- EmployeeDirectory_Person - Steve advanced columns down side", useEye, genMeth, skipfailure);
 		
 		//Landline
@@ -421,11 +394,16 @@ enum EnvironmentMode {
 		//Go back to the ED main screen
 		genMeth.clickId(genMeth, "Profile");
 		genMeth.clickId(genMeth, "ED");
+		
 		//Waiting for element id's from Limor
-		genMeth.clickXpth(genMeth, "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeNavigationBar[1]/XCUIElementTypeButton[1]");
+		String xpth = "//XCUIElementTypeButton[@name=\"SQL Golden V6\"]";
+		genMeth.clickXpth(genMeth, xpth);
 		Thread.sleep(2000);
-		genMeth.clickXpth(genMeth, "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeNavigationBar[1]/XCUIElementTypeButton[1]");
-
+		
+		//Advanced Columns in Persons Collections (Email)  --> Need a solution for swipe in order to be able to open the Email / Phone side option
+		//xpth = "//XCUIElementTypeStaticText[@name=\"P_COLLECTION_EMAIL\"]";
+		//genMeth.clickXpth(genMeth, xpth);	
+		
 	}
 	
 	@Test(enabled = true, testName = "Grid_AdvancedColumns", retryAnalyzer = Retry.class, description = "Grid_AdvancedColumns",
@@ -442,45 +420,41 @@ enum EnvironmentMode {
 		Thread.sleep(5000);
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - main screen", useEye, genMeth, skipfailure);
 
-		genMeth.swipeDownIphone6(4, 1000);
-		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Scroll Down", useEye, genMeth, skipfailure);
-
-		genMeth.swipeUpIphone6(4, 1000);
-		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Scroll Up", useEye, genMeth, skipfailure);
-
 		// Address
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView[1]/XCUIElementTypeCell[5]/XCUIElementTypeOther[1]/XCUIElementTypeImage[1]");
+		String el = "(//XCUIElementTypeImage[@name=\"icon_address\"])[1]";
+		driver.findElementByXPath(el).click();
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Address maps", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, iosData.BTNCancel);
 
 		// Mobile Phone
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView[1]/XCUIElementTypeCell[6]/XCUIElementTypeOther[1]/XCUIElementTypeImage[1]");
+		el = "(//XCUIElementTypeImage[@name=\"icon_phone\"])[1]";
+		driver.findElementByXPath(el).click();
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Mobile Phone", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, iosData.BTNCancel);
 
 		// Email
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView[1]/XCUIElementTypeCell[7]/XCUIElementTypeOther[1]/XCUIElementTypeImage[1]");
+		el = 		"(//XCUIElementTypeImage[@name=\"icon_email\"])[1]";
+		driver.findElementByXPath(el).click();
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Email", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, iosData.BTNsend);
 
 		// Landline
 		Thread.sleep(1000);
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView[1]/XCUIElementTypeCell[8]/XCUIElementTypeOther[1]/XCUIElementTypeImage[1]");
+		el = 		"(//XCUIElementTypeImage[@name=\"icon_phone\"])[2]";
+		driver.findElementByXPath(el).click();
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Landline", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, iosData.BTNCancel);
 
 		// URL
-		genMeth.swipeRightIphone6(1, 1000);
+		genMeth.SwipeRight();
 		genMeth.clickId(genMeth, "www.milliondollarhomepage.com");
-		Thread.sleep(5000);
+		Thread.sleep(15000);
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - URL Page is open", useEye, genMeth, skipfailure);
 		genMeth.clickId(genMeth, iosData.BTNdone);
 
-		genMeth.swipeRightIphone6(1, 1000);
+		//genMeth.SwipeRight();
+		genMeth.SwipeRight();
+
 		genMeth.eyesCheckWindow("(iOS_V6)- Grid_AdvancedColumns - Swipe right (Icon,Precentage,Currency)", useEye,
 				genMeth, skipfailure);
 
@@ -492,17 +466,120 @@ enum EnvironmentMode {
 
 	}
 
+	
+	@Test(enabled = true, testName = "List_Regular_AdvancedColumns", retryAnalyzer = Retry.class, groups = {
+			"Sanity IOS" })
+	
 	public void List_Regular_AdvancedColumns()
 			throws ParserConfigurationException, SAXException, IOException, InterruptedException {
-
-		// Open the SQL Golden V6 App
+		
+		
+		// Open the SQL Golden V6 App	
 		genMeth.clickId(genMeth, "SQL Golden V6");
+		
+		genMeth.clickId(genMeth, "List_Regular");
+		Thread.sleep(6000);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 with advanced first column ", useEye, genMeth, skipfailure);
+		
+		
+		//Phone
+		String Xpth = "(//XCUIElementTypeButton[@name=\"icon item phone\"])[1]";
+		genMeth.clickXpth(genMeth, Xpth);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 Phone ", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNCancel);
+
+		//Mail
+		Xpth = "(//XCUIElementTypeButton[@name=\"icon item email\"])[1]";
+		genMeth.clickXpth(genMeth, Xpth);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 Mail	 ", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNsend);
+		
+		//Map
+		Xpth = "(//XCUIElementTypeButton[@name=\"icon item address\"])[1]";
+		genMeth.clickXpth(genMeth, Xpth);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 Maps	 ", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNCancel);
+		
+		//URL
+		Xpth = "(//XCUIElementTypeButton[@name=\"icon item url\"])[1]";
+		genMeth.clickXpth(genMeth, Xpth);
+		Thread.sleep(5000);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 URL	 ", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNdone);
+
+		
+		//Lanline
+		Xpth = "(//XCUIElementTypeButton[@name=\"icon item phone\"])[2]";
+		genMeth.clickXpth(genMeth, Xpth);
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 Landline	 ", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNCancel);
+		
+		//Open Regular2 tab
+		Xpth = "//XCUIElementTypeStaticText[@name=\"REGULAR_DEF_V2\"]";
+		genMeth.clickXpth(genMeth, Xpth);
+		
+		genMeth.clickId(genMeth, "Name");
+		genMeth.eyesCheckWindow("(iOS_V6)- List_Regular_AdvancedColumns - Regular1 Advanced columns", useEye, genMeth, skipfailure);
+		genMeth.clickId(genMeth, "List_Regular");
+		
 
 		// Go back to the ED main screen
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeNavigationBar[1]/XCUIElementTypeButton[1]");
-		genMeth.clickXpth(genMeth,
-				"//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeNavigationBar[1]/XCUIElementTypeButton[1]");
+		Xpth = "//XCUIElementTypeButton[@name=\"SQL Golden V6\"]";
+		genMeth.clickXpth(genMeth, Xpth);
+		
+		Xpth = "//XCUIElementTypeButton[@name=\"Applications\"]";
+		genMeth.clickXpth(genMeth, Xpth);
+	}
+	
+	@Test(enabled = true, testName = "param_Report_AllDataTypes", retryAnalyzer = Retry.class, groups = {
+			"Sanity IOS" })
+
+	public void param_Report_AllDataTypes()
+			throws ParserConfigurationException, SAXException, IOException, InterruptedException {
+
+
+		genMeth.clickId(genMeth, "SQL Golden V6");
+		genMeth.SwipeDown();
+		genMeth.clickId(genMeth, "Param All Data Types");
+		genMeth.eyesCheckWindow("(iOS_V6)- param_Report_AllDataTypes - All Parameters screen", useEye, genMeth,
+				skipfailure);
+
+		genMeth.clickId(genMeth, "String");
+		String xpth = "//XCUIElementTypeApplication[@name=\"SkyGiraffe\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeTextView";
+		genMeth.sendXpth(genMeth, xpth, "This is a String");
+		genMeth.clickId(genMeth, iosData.BTNdone);
+
+		genMeth.clickId(genMeth, "Integer");
+		genMeth.sendXpth(genMeth, xpth, "100");
+		genMeth.clickId(genMeth, iosData.BTNdone);
+
+		genMeth.clickId(genMeth, "Decimal");
+		genMeth.sendXpth(genMeth, xpth, "50.55");
+		genMeth.clickId(genMeth, iosData.BTNdone);
+
+		genMeth.clickId(genMeth, "Date Time");
+		xpth = "//XCUIElementTypeApplication[@name=\"SkyGiraffe\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeTable/XCUIElementTypeCell[4]/XCUIElementTypeOther[1]/XCUIElementTypePickerWheel[1]";
+		genMeth.sendXpth(genMeth, xpth, "26");
+
+		xpth = "//XCUIElementTypeApplication[@name=\"SkyGiraffe\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeTable/XCUIElementTypeCell[4]/XCUIElementTypeOther[1]/XCUIElementTypePickerWheel[2]";
+		genMeth.sendXpth(genMeth, xpth, "December");
+
+		xpth = "//XCUIElementTypeApplication[@name=\"SkyGiraffe\"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeTable/XCUIElementTypeCell[4]/XCUIElementTypeOther[1]/XCUIElementTypePickerWheel[3]";
+		genMeth.sendXpth(genMeth, xpth, "1975");
+		genMeth.clickId(genMeth, "Date Time");
+
+		// genMeth.clickId(genMeth, "icon_date");
+
+		genMeth.eyesCheckWindow("(iOS_V6)- param_Report_AllDataTypes - All Parameters are filled", useEye, genMeth,
+				skipfailure);
+		genMeth.clickId(genMeth, iosData.BTNsubmit_ID);
+		Thread.sleep(5000);
+		genMeth.eyesCheckWindow("(iOS_V6)- param_Report_AllDataTypes - Tab is open with all All Data types", useEye,
+				genMeth, skipfailure);
+
+		// Back to startup screen
+		genMeth.clickAccessibilityID("SQL Golden V6");
+		genMeth.clickAccessibilityID("Applications");
 
 	}
 	
@@ -519,8 +596,7 @@ enum EnvironmentMode {
 			
 			//Not sure why it doesn't uninstall the app (deprecated?)
 			driver.removeApp(appIdentifier);
-			driver.quit();
-			
+			driver.quit();			
 	
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -37,6 +37,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import io.appium.java_client.remote.IOSMobileCapabilityType;
 
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebElement;
 
 import io.appium.java_client.remote.MobileCapabilityType;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
@@ -62,7 +63,7 @@ public class IosMethods {
 	
 	//Boolean useEye = true;
 	//boolean skipfailure = true;
-	IosMethods genMeth;
+	//IosMethods genMeth;
 
 	/*
 	public IosMethods(){
@@ -93,6 +94,8 @@ public class IosMethods {
 		//capabilities.setCapability(IOSMobileCapabilityType.BUNDLE_ID, genMeth.getValueFromPropFile("appIdentifier"));
 
 		capabilities.setCapability("platformVersion","10.3.3");
+		capabilities.setCapability("clearSystemFiles","true");
+		
 
 		//capabilities.setCapability(CapabilityType.VERSION,genMeth.getValueFromPropFile("CapabilityType.VERSION"));
 		
@@ -122,18 +125,18 @@ public class IosMethods {
 		//capabilities.setCapability(MobileCapabilityType.ENABLE_PROFILING_CAPABILITY,"true");
 
 
-		capabilities.setCapability("useNewWDA", "true");
+		capabilities.setCapability("useNewWDA", "false");
 		//capabilities.setCapability("wdaLaunchTimeout", 10000);
 		//capabilities.setCapability("updatedWDABundleId", genMeth.getValueFromPropFile("appIdentifier"));
-		capabilities.setCapability("updatedWDABundleId", "SG-Appium.WebDriverAgentTest-V6.SkyGiraffeV6");
+		capabilities.setCapability("updatedWDABundleId", "io.appium.WebDriverAgent-SG");
 		
-		//capabilities.setCapability("wdaConnectionTimeout", 100000);
+		//capabilities.setCapability("wdaConnectionTimeout", 20000);
 
 		//capabilities.setCapability("autoAcceptAlerts", true);
 		//capabilities.setCapability(IOSMobileCapabilityType.AUTO_ACCEPT_ALERTS, genMeth.getValueFromPropFile("Alert"));
 		//capabilities.setCapability(IOSMobileCapabilityType.AUTO_DISMISS_ALERTS, "True");
 		
-		capabilities.setCapability("newCommandTimeout", 12000);
+		capabilities.setCapability("newCommandTimeout", 45);
 		
 		
 		try {
@@ -150,11 +153,9 @@ public class IosMethods {
 				driver = new IOSDriver<MobileElement>(new URL("http://0.0.0.0:4723/wd/hub"), capabilities);
 
 			}
-			genMeth.releaseAllow(genMeth);
 			
-
-			// XCUIElementTypeButton
-
+			genMeth.ReleaseAlert();
+			
 		}
 
 		catch (MalformedURLException e) {
@@ -177,7 +178,7 @@ public class IosMethods {
 		
 		
 		// Open the ENV screen
-        genMeth.clickId(genMeth, iosData.IconLoginSettings);
+		genMeth.clickId(genMeth, iosData.IconLoginSettings);
 
         switch (mode) {
 
@@ -212,15 +213,18 @@ public class IosMethods {
 		}
 
 		
-		genMeth.clickId(genMeth, iosData.IconCancelENV);
+		//genMeth.clickId(genMeth, iosData.IconCancelENV);
+		genMeth.clickXpth(genMeth, "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[3]/XCUIElementTypeOther[1]/XCUIElementTypeNavigationBar[1]/XCUIElementTypeButton[1]");
 		
 		genMeth.sendId(genMeth, iosData.TEXTFIELDemailID, iosData.userQA);
 		genMeth.sendId(genMeth, iosData.TEXTFIELDpasswordID, iosData.passwordQA);
 		genMeth.clickId(genMeth, iosData.BTNloginID);
+		/*
 		boolean isAllow = genMeth.checkIsElementVisible(By.id("Allow"));
 		if (isAllow) {
 			genMeth.clickId(genMeth, "Allow");
 		}
+		*/
 
 		
 	}
@@ -345,9 +349,7 @@ public class IosMethods {
 	public void killAppAndroid(IOSDriver<MobileElement> driver)
 			throws InterruptedException, IOException {
 
-		// driver.removeApp("com.pogoplug.android");
 		driver.resetApp();
-		// driver.removeApp(bundleId);
 
 		try {
 			driver.quit();
@@ -360,7 +362,7 @@ public class IosMethods {
 	public void signOutFromStartup(IosMethods genMeth)
 			throws InterruptedException, IOException {
 		genMeth.clickXpth(genMeth, "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeTabBar[1]/XCUIElementTypeButton[2]");
-		genMeth.swipeDownIphone6(1, 1000);
+		genMeth.SwipeDown();
 		genMeth.clickId(genMeth, iosData.BTNlogout);
 		
 	}
@@ -566,6 +568,32 @@ public class IosMethods {
 		}
 	}
 
+	public void clickAccessibilityID(String AccessibilityId) throws InterruptedException, IOException {
+
+		int count = 0;
+
+		while (count < 4) {
+
+			try {
+
+				MobileElement el = (MobileElement) driver.findElementByAccessibilityId(AccessibilityId);
+				el.click();
+				count = 4;
+			} catch (Exception e) {
+				Thread.sleep(5000);
+				count++;
+				// TODO Auto-generated catch block
+
+			}
+		}
+
+		if (count < 4) {
+
+			org.testng.Assert.fail(AccessibilityId + " didn't display");
+		}
+
+	}
+	
 
 	public void clickXpth(IosMethods genMeth, String xpth)
 			throws InterruptedException, IOException {
@@ -783,10 +811,10 @@ public class IosMethods {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public MobileElement fluentwait(IOSDriver driver, final By byType) {
+	public MobileElement fluentwait(IOSDriver<MobileElement> driver, final By byType) {
 		Wait<IOSDriver> wait = new FluentWait<IOSDriver>(driver)
 
-		.withTimeout(30, TimeUnit.SECONDS).pollingEvery(5, TimeUnit.SECONDS)
+		.withTimeout(60, TimeUnit.SECONDS).pollingEvery(5, TimeUnit.SECONDS)
 				.ignoring(NoSuchElementException.class);
 
 		MobileElement foo = (MobileElement) wait
@@ -797,6 +825,27 @@ public class IosMethods {
 				});
 
 		wait.until(ExpectedConditions.elementToBeClickable(byType));
+
+		return foo;
+	}
+	
+	public MobileElement fluentwaitByAccessbilityID(IOSDriver<MobileElement> driver, String AccessbilityID) {
+		@SuppressWarnings("rawtypes")
+		Wait<IOSDriver> wait = new FluentWait<IOSDriver>(driver)
+
+		.withTimeout(60, TimeUnit.SECONDS).pollingEvery(5, TimeUnit.SECONDS)
+				.ignoring(NoSuchElementException.class);
+
+		@SuppressWarnings("rawtypes")
+		MobileElement foo = (MobileElement) wait
+				.until(new Function<IOSDriver, MobileElement>() {
+					public MobileElement apply(IOSDriver driver) {
+						return (MobileElement) driver.findElementsByAccessibilityId(AccessbilityID);
+						
+					}
+				});
+
+		wait.until(ExpectedConditions.elementToBeClickable(foo));
 
 		return foo;
 	}
@@ -985,6 +1034,7 @@ public class IosMethods {
 		return curDate;
 	}
 
+	/*
 	public void backgroundToForeground(IOSDriver<MobileElement> driver,
 			int numOfTimes) {
 
@@ -995,6 +1045,7 @@ public class IosMethods {
 		}
 
 	}
+	*/
 
 	public void lockUnlock(IOSDriver<MobileElement> driver, int numOfTimes) {
 
@@ -1006,6 +1057,7 @@ public class IosMethods {
 
 	}
 
+	/*
 	public void longPressElement(IOSDriver<MobileElement> driver,
 			IosMethods genMeth, By By) {
 		TouchAction action;
@@ -1020,7 +1072,7 @@ public class IosMethods {
 		}
 
 	}
-
+*/
 	public void setLandscapeMode() {
 
 		//driver.rotate(ScreenOrientation.LANDSCAPE);  --> Deprecated in java-client 5.x
@@ -1112,7 +1164,7 @@ public class IosMethods {
 	
 	
 	
-	
+	/*
 	public void swipeAction(int x1, int y1, int x2, int y2, int wait){
 		
 		TouchAction ta = new TouchAction(driver);
@@ -1141,8 +1193,8 @@ public class IosMethods {
 	}
 	
 	
-	
-	
+	*/
+	/*
 	
 	public void swipeUpIphone6(int NumOfSwipe, int miliseconds) throws InterruptedException {
 
@@ -1198,7 +1250,7 @@ public class IosMethods {
 
 	}
 		
-	
+	*/
 
 	
 	
@@ -1289,6 +1341,8 @@ public class IosMethods {
         return dest; 
      }
 	
+	
+	
 	public void releaseOK(IosMethods genMeth) throws ParserConfigurationException, SAXException, IOException, InterruptedException{
 		
 		boolean isVisible =  genMeth.checkIsElementVisible(By.id(iosData.BTNokName));
@@ -1297,6 +1351,8 @@ public class IosMethods {
 		}
 	}
 	
+	/*
+	
 public void releaseAllow(IosMethods genMeth) throws ParserConfigurationException, SAXException, IOException, InterruptedException{
 		
 		boolean isVisible =  genMeth.checkIsElementVisible(By.id("Allow"));
@@ -1304,16 +1360,98 @@ public void releaseAllow(IosMethods genMeth) throws ParserConfigurationException
 			genMeth.clickId(genMeth, "Allow");
 		}
 	}
+*/
+
+	public void ReleaseAlert() {
+
+		int count = 0;
+		while (count < 3) {
+			try {
+
+				Thread.sleep(3000);
+				driver.switchTo().alert().accept();
+				count = 3;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				count++;
+			}
+
+		}
+	}
+
+
 	
 
-public void closeKeyborad(){
+	public void closeKeyborad() {
+
+		Keys key = null;
+		driver.getKeyboard().sendKeys(key.RETURN);
+
+	}
+
 	
-	Keys key = null;
-	driver.getKeyboard().sendKeys(key.RETURN);
+
+
 	
+	public boolean scrollToDirection_iOS_XCTest(MobileElement el, String direction) {
+        // The main difference from swipe call with the same argument is that scroll will try to move
+        // the current viewport exactly to the next/previous page (the term "page" means the content,
+        // which fits into a single device screen)
+        try {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            HashMap<String, String> scrollObject = new HashMap<String, String>();
+            if (direction.equals("d")) {
+                scrollObject.put("direction", "down");
+            } else if (direction.equals("u")) {
+                scrollObject.put("direction", "up");
+            } else if (direction.equals("l")) {
+                scrollObject.put("direction", "left");
+            } else if (direction.equals("r")) {
+                scrollObject.put("direction", "right");
+            }
+           // scrollObject.put("element", el.getId());
+            scrollObject.put("element", ((RemoteWebElement) el).getId());
+            scrollObject.put("toVisible", "true"); // optional but needed sometimes
+            js.executeScript("mobile:scroll", scrollObject);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 	
+	public void SwipeDown(){
+		
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		HashMap<String, String> scrollObject = new HashMap<String, String>();
+		scrollObject.put("direction", "down");
+		js.executeScript("mobile: scroll", scrollObject);
+	}
+
+public void SwipeUp(){
+		
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		HashMap<String, String> scrollObject = new HashMap<String, String>();
+		scrollObject.put("direction", "up");
+		js.executeScript("mobile: scroll", scrollObject);
+	}
+
+public void SwipeLeft(){
+	
+	JavascriptExecutor js = (JavascriptExecutor) driver;
+	HashMap<String, String> scrollObject = new HashMap<String, String>();
+	scrollObject.put("direction", "left");
+	js.executeScript("mobile: scroll", scrollObject);
 }
+
+public void SwipeRight(){
 	
+	JavascriptExecutor js = (JavascriptExecutor) driver;
+	HashMap<String, String> scrollObject = new HashMap<String, String>();
+	scrollObject.put("direction", "right");
+	js.executeScript("mobile: scroll", scrollObject);
+}
+
+
 	// public void changeConnectionType(String mode) {
 	//
 	// NetworkConnection mobileDriver = (NetworkConnection) driver;
